@@ -17,4 +17,13 @@ public interface CommunityConstant {
      */
     int ACTIVATION_FAILURE = 2;
 
+    /**
+     * 固定超时时间
+     */
+    int DEFAULT_TIME = 3600 * 12;
+    /**
+     * 长时超时时间
+     */
+    int REMEMBERME_TIME = 3600 * 24 * 7;
+
 }
