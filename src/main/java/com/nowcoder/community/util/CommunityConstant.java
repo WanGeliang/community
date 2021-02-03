@@ -26,4 +26,14 @@ public interface CommunityConstant {
      */
     int REMEMBERME_TIME = 3600 * 24 * 7;
 
+    /**
+     * 实体类型: 帖子
+     */
+    int ENTITY_TYPE_POST = 1;
+
+    /**
+     * 实体类型: 评论
+     */
+    int ENTITY_TYPE_COMMENT = 2;
+
 }

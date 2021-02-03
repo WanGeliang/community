@@ -1,8 +1,11 @@
 package com.nowcoder.community.entity;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.Date;
 
 public class DiscussPost {
+
 
     private int id;
     private int userId;
