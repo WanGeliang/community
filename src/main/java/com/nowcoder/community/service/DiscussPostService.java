@@ -48,4 +48,9 @@ public class DiscussPostService {
     public DiscussPost getDiscussPostDetails(int id) {
         return discussPostMapper.selectDiscussPostDetail(id);
     }
+
+    //更新帖子数量
+    public int updateCommentCount(int id, int commentCount) {
+        return discussPostMapper.updateCommentCount(id, commentCount);
+    }
 }

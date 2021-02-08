@@ -3,11 +3,14 @@ package com.nowcoder.community.controller;
 import com.google.code.kaptcha.Producer;
 import com.nowcoder.community.entity.User;
 import com.nowcoder.community.service.UserService;
+import com.nowcoder.community.util.CommunityUtil;
+import com.nowcoder.community.util.RedisKeyUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -23,6 +26,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static com.nowcoder.community.util.CommunityConstant.*;
 
@@ -41,6 +45,9 @@ public class LoginController {
     //引入用户层service
     @Autowired
     UserService userService;
+
+    @Autowired
+    RedisTemplate redisTemplate;
 
     //跳转到注册界面
     @RequestMapping(path = "/register", method = RequestMethod.GET)
@@ -80,6 +87,7 @@ public class LoginController {
             model.addAttribute("usernameMsg", map.get("usernameMsg"));
             model.addAttribute("passwordMsg", map.get("passwordMsg"));
             model.addAttribute("emailMsg", map.get("emailMsg"));
+
             return "/site/register";//注册失败，继续跳转到注册界面
         }
 
@@ -115,19 +123,26 @@ public class LoginController {
     /**
      * 通过kaptcha生成图片返回到前端
      *
-     * @param response
-     * @param session
+     * @param response 利用redis进行存储验证码
      */
     @RequestMapping(path = "/kaptcha", method = RequestMethod.GET)
-    public void producerKaptcha(HttpServletResponse response, HttpSession session) {
-        // 生成验证码
+    public void producerKaptcha(HttpServletResponse response/*, HttpSession session*/) {
+        // 生成验证码,这个时候是字符串
         String text = kaptchaProducer.createText();
         //将生成的验证码生成为图片
         BufferedImage image = kaptchaProducer.createImage(text);
 
         // 将验证码存入session
-        session.setAttribute("kaptcha", text);
-
+//        session.setAttribute("kaptcha", text);
+        //将验证码存到cookie
+        String kaptchaOwner = CommunityUtil.generateUUID();
+        Cookie cookie = new Cookie("kaptchaOwner", kaptchaOwner);
+        cookie.setMaxAge(60);
+        cookie.setPath(contextPath);
+        response.addCookie(cookie);
+        //再将验证码存入到redis
+        String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+        redisTemplate.opsForValue().set(kaptchaKey, text,60, TimeUnit.SECONDS);
         // 将图片输出给浏览器
         response.setContentType("image/png");//格式
         try {
@@ -146,17 +161,24 @@ public class LoginController {
      * @param username
      * @param password
      * @param code
-     * @param rememberme  超时时间使用
-     * @param model  存错误数据使用
-     * @param session   取验证码数据使用
-     * @param response  重定向使用
+     * @param rememberme 超时时间使用
+     * @param model      存错误数据使用
+//     * @param session    取验证码数据使用
+     * @param response   重定向使用
      * @return
      */
     @RequestMapping(path = "/login", method = RequestMethod.POST)
     public String login(String username, String password, String code, boolean rememberme,//这些单独的数据不会封装到MVC中
-                        Model model, HttpSession session, HttpServletResponse response) {
+                        Model model, /*HttpSession session, */HttpServletResponse response,
+                        @CookieValue("kaptchaOwner") String kaptchaOwner) {
         //检查验证码
-        String kaptcha = (String) session.getAttribute("kaptcha");
+//        String kaptcha = (String) session.getAttribute("kaptcha");
+        String kaptcha =null;
+
+        if(StringUtils.isNoneBlank(kaptchaOwner)){
+            String kaptchaKey = RedisKeyUtil.getKaptchaKey(kaptchaOwner);
+            kaptcha = (String) redisTemplate.opsForValue().get(kaptchaKey);
+        }
         if (StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code) || !kaptcha.equalsIgnoreCase(code)) {
             model.addAttribute("codeMsg", "验证码不正确");
             return "site/login";

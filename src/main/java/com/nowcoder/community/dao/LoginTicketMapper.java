@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.*;
 import java.util.Date;
 
 @Mapper
+@Deprecated
 public interface LoginTicketMapper {
 
     //插入一条登录用户信息的数据

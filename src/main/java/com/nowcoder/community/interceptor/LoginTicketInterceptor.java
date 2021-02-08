@@ -43,8 +43,10 @@ public class LoginTicketInterceptor implements HandlerInterceptor {
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response,Object handler, ModelAndView modelAndView) throws Exception {
         User user = hostHolder.getUser();
+        //model不能添加对象
+        //modelAndView可以添加对象
         if (user != null && modelAndView != null) {
             modelAndView.addObject("loginUser", user);
         }
