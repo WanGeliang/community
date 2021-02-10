@@ -1,6 +1,7 @@
 package com.nowcoder.community;
 
 import com.nowcoder.community.util.MailClient;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,9 @@ import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SessionCallback;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.TemplateEngine;
@@ -29,6 +33,30 @@ public class MailTest {
 
     @Autowired
     private RedisTemplate redisTemplate;
+
+    @Autowired
+    KafkaTemplate kafkaTemplate;
+
+    @Autowired
+    KafkaProducer kafkaProducer;
+
+    @Test
+    //测试kafka
+    public void testKafka() {
+
+
+        kafkaProducer.sendMessage("test", "您好");
+        kafkaProducer.sendMessage("test", "在吗？");
+        try {
+            Thread.sleep(1000 * 10);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        kafkaProducer.sendMessage("test", "我是你哥");
+//        KafkaConsumer kafkaConsumer = new KafkaConsumer();
+
+//        new KafkaConsumer().getMessage(new ConsumerRecord());
+    }
 
     //测试redis
     @Test
@@ -157,4 +185,27 @@ public class MailTest {
 
         mailClient.sendMail("408124195@qq.com", "HTML", content);
     }
+
 }
+
+@Component
+class KafkaProducer {
+    @Autowired
+    private KafkaTemplate kafkaTemplate;
+
+    public void sendMessage(String topic, String content) {
+        kafkaTemplate.send(topic, content);
+    }
+
+}
+
+@Component
+class KafkaConsumer {
+
+    @KafkaListener(topics = "test")
+    public void getMessage(ConsumerRecord record) {
+        System.out.println(record.value());
+    }
+
+}
+

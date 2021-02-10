@@ -22,7 +22,7 @@ public class AspectAop {
 
 
     @Pointcut("execution(* com.nowcoder.community.service.*.*(..))")
-    public void pointcut(){
+    public void pointcut() {
 
     }
 
@@ -30,6 +30,10 @@ public class AspectAop {
     public void before(JoinPoint joinPoint) {
         // 用户[1.2.3.4],在[xxx],访问了[com.nowcoder.community.service.xxx()].
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+
+        if (attributes == null) {//aop可能为空,只有从controller进行访问的才会有request对象
+            return;
+        }
         HttpServletRequest request = attributes.getRequest();
         String ip = request.getRemoteHost();
         String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());

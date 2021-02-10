@@ -55,4 +55,9 @@ public class CommentService {
 
         return rows;
     }
+
+    //根据帖子id查询帖子
+    public Comment findCommentById(int id){
+        return commentMapper.selectCommentById(id);
+    }
 }
