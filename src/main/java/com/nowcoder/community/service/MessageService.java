@@ -34,12 +34,13 @@ public class MessageService {
         return messageMapper.selectLetterCount(conversation);
     }
 
-    public int findLetterUnreadCount(int userId, String conversation) {
-        return messageMapper.selectLetterUnreadCount(userId, conversation);
+    public int findLetterUnreadCount(int userId, String conversationId) {
+        return messageMapper.selectLetterUnreadCount(userId, conversationId);
     }
 
     /**
      * 添加一条消息进数据库
+     *
      * @param message
      * @return
      */
@@ -51,10 +52,27 @@ public class MessageService {
 
     /**
      * 修改未读消息，设置为已读消息
+     *
      * @param ids
      * @return
      */
     public int readMessage(List<Integer> ids) {
         return messageMapper.updateStatus(ids, 1);
+    }
+
+    public Message findLatestNotice(int userId, String topic) {
+        return messageMapper.selectLatestNotice(userId, topic);
+    }
+
+    public int findNoticeCount(int userId, String topic) {
+        return messageMapper.selectNoticeCount(userId, topic);
+    }
+
+    public int findNoticeUnreadCount(int userId, String topic) {
+        return messageMapper.selectNoticeUnreadCount(userId, topic);
+    }
+
+    public List<Message> findNotices(int userId,String topic,int offset,int limit){
+        return messageMapper.selectNotices(userId,topic,offset,limit);
     }
 }

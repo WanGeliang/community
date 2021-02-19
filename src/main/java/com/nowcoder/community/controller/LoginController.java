@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -172,6 +173,7 @@ public class LoginController {
                         Model model, /*HttpSession session, */HttpServletResponse response,
                         @CookieValue("kaptchaOwner") String kaptchaOwner) {
         //检查验证码
+//        System.out.println("**********************************");
 //        String kaptcha = (String) session.getAttribute("kaptcha");
         String kaptcha =null;
 
@@ -202,6 +204,7 @@ public class LoginController {
     @RequestMapping(path = "/logout", method = RequestMethod.GET)
     public String logout(@CookieValue("ticket") String ticket) {
         userService.logout(ticket);
+        SecurityContextHolder.clearContext();//清理凭证
         return "redirect:/login";
     }
 

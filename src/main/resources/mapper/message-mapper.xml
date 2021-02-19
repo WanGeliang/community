@@ -11,19 +11,20 @@
         from_id, to_id, conversation_id, content, status, create_time
     </sql>
     <select id="selectConversations" resultType="Message">
-        select <include refid="selectFields"></include>
+        select
+        <include refid="selectFields"></include>
         from message
         where id in (
-            select max(id) from message
-            where status != 2
-            and from_id != 1
-            and (from_id = #{userId} or to_id = #{userId})
-            group by conversation_id
+        select max(id) from message
+        where status != 2
+        and from_id != 1
+        and (from_id = #{userId} or to_id = #{userId})
+        group by conversation_id
         )
         order by id desc
         limit #{offset}, #{limit}
     </select>
-<!--from_id=1是系统发送的信息-->
+    <!--from_id=1是系统发送的信息-->
     <select id="selectConversationCount" resultType="int">
         select count(m.maxid) from (
             select max(id) as maxid from message
@@ -35,7 +36,8 @@
     </select>
 
     <select id="selectLetters" resultType="Message">
-        select <include refid="selectFields"></include>
+        select
+        <include refid="selectFields"></include>
         from message
         where status != 2
         and from_id != 1
@@ -75,4 +77,49 @@
             #{id}
         </foreach>
     </update>
+
+    <select id="selectLatestNotice" resultType="Message">
+        select
+        <include refid="selectFields"></include>
+        from message
+        where id in (
+            select max(id) from message
+            where status != 2
+            and from_id = 1
+            and to_id =#{userId}
+            and conversation_id=#{topic}
+        )
+    </select>
+
+    <select id="selectNoticeCount" resultType="int">
+        select count(id) from message
+            where status != 2
+            and from_id = 1
+            and to_id =#{userId}
+            and conversation_id=#{topic}
+    </select>
+
+
+    <select id="selectNoticeUnreadCount" resultType="int">
+        select count(id) from message
+            where status = 0
+            and from_id = 1
+            and to_id =#{userId}
+            <if test="topic!=null">
+                and conversation_id=#{topic}
+            </if>
+    </select>
+
+    <select id="selectNotices" resultType="Message">
+        select
+        <include refid="selectFields"></include>
+        from message
+        where status != 2
+        and from_id = 1
+        and to_id = #{userId}
+        and conversation_id=#{topic}
+        order by create_time desc
+        limit #{offset},#{limit}
+    </select>
+
 </mapper>

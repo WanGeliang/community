@@ -45,18 +45,28 @@ public class CommentController implements CommunityConstant {
                 .setUserId(hostHolder.getUser().getId())
                 .setEntityType(comment.getEntityType())
                 .setEntityId(comment.getEntityId())
-                .setData("postId",discussPostId);//帖子id
+                .setData("postId", discussPostId);//帖子id
 
-        if(comment.getEntityType()==ENTITY_TYPE_POST){
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
             DiscussPost target = discussPostService.getDiscussPostDetails(comment.getEntityId());
             event.setEntityUserId(target.getUserId());
-        }else if(comment.getEntityType()==ENTITY_TYPE_COMMENT){
+        } else if (comment.getEntityType() == ENTITY_TYPE_COMMENT) {
             Comment target = commentService.findCommentById(comment.getEntityId());
             event.setEntityUserId(target.getUserId());
         }
 
         eventProducer.fireEvent(event);
 
+
+        if (comment.getEntityType() == ENTITY_TYPE_POST) {
+            //触发回帖事件
+            event = new Event()
+                    .setTopic(TOPIC_PUBLISH)
+                    .setUserId(comment.getUserId())
+                    .setEntityType(ENTITY_TYPE_POST)
+                    .setEntityId(discussPostId);
+            eventProducer.fireEvent(event);
+        }
         return "redirect:/discuss/getDiscussDetails/" + discussPostId;
     }
 
