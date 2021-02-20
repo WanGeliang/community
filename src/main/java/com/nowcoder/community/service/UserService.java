@@ -265,6 +265,7 @@ public class UserService {
         redisTemplate.delete(userKey);
     }
 
+
     public Collection<? extends GrantedAuthority> getAuthorities(int userId){
         User user = this.findUserById(userId);
 

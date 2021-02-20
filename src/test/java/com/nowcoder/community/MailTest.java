@@ -1,5 +1,7 @@
 package com.nowcoder.community;
 
+import com.nowcoder.community.dao.DiscussPostMapper;
+import com.nowcoder.community.dao.elasticsearch.DiscussPostRepository;
 import com.nowcoder.community.util.MailClient;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.junit.Test;
@@ -7,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.redis.core.BoundValueOperations;
 import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -39,6 +42,22 @@ public class MailTest {
 
     @Autowired
     KafkaProducer kafkaProducer;
+
+    @Autowired
+    DiscussPostMapper discussPostMapper;
+
+    @Autowired
+    DiscussPostRepository discussPostRepository;
+
+    @Autowired
+    ElasticsearchTemplate template;
+
+    @Test
+    public void testInsert(){
+        discussPostRepository.save(discussPostMapper.selectDiscussPostDetail(241));
+        discussPostRepository.save(discussPostMapper.selectDiscussPostDetail(242));
+        discussPostRepository.save(discussPostMapper.selectDiscussPostDetail(243));
+    }
 
     @Test
     //测试kafka
